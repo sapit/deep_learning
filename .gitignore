@@ -2,3 +2,11 @@
 __pycache__/
 *.py[cod]
 *$py.class
+SemEval/
+emobank/
+bar.csv
+trial.tar.gz
+dataset-fb-valence-arousal-anon.csv
+Y_distribution_EmoBank_arousal.png 
+Y_distribution_fb.png
+.vscode
