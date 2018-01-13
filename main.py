@@ -2,12 +2,14 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation
 from keras.optimizers import SGD
+from keras.callbacks import ModelCheckpoint
 from nltk.corpus import stopwords
 import matplotlib.pyplot as plt
 import regex as re
 import numpy as np
 import csv
 import copy
+import read_dataset as rd
 
 def readFbDataset():
 	csvf = csv.reader(open('dataset-fb-valence-arousal-anon.csv'))
@@ -39,8 +41,8 @@ def readEmoBank():
 	# msgdict = { i[0].strip():i[1].strip() for i in csvf}
 	del csvf[0]
 	msgdict = { i[0]:i[1] for i in csvf }
-	print msgdict
-	print len(msgdict.keys())
+	# print msgdict
+	# print len(msgdict.keys())
 	# asd
 	# csvf = csv.reader(open('emobank/reader.tsv'), delimiter='\t')
 	with open('emobank/reader.tsv') as eb:
@@ -80,7 +82,8 @@ def readEmoBank():
 # scores = np.array([separateMessageFromScore(i) for i in csvf]).astype('int')
 
 # messages,columns,scores = readFbDataset()
-messages,columns,scores = readEmoBank()
+# messages,columns,scores = readEmoBank()
+messages,columns,scores = rd.readEmoBank()
 
 # print x1 == messages, x2 == columns, x3 == scores
 
@@ -99,13 +102,12 @@ for i in range(len(messages[:messagesLimit])):
 	messages[i] = " ".join(filtered_words)
 
 words, counts = np.unique(words, return_counts=True)
-words = np.array([i for i,j in dict(zip(words, counts)).iteritems() if j > 1])
-# words = [i for i,j in dict(zip(words, counts))]
+idx_to_word = np.array([i for i,j in dict(zip(words, counts)).iteritems() if j > 1])
+word_to_idx = {idx_to_word[i]:i for i in range(len(idx_to_word))}
+# print word_to_idx[idx_to_word[5]] == 5
+# words = np.array([i for i,j in dict(zip(words, counts)).iteritems() if j > 1])
+words = idx_to_word
 
-# words = np.unique(np.array(words))
-# print words
-# print words.shape
-# asd
 
 def processSentence(s):
 	
@@ -142,9 +144,10 @@ Y = normaliseScores(Y)
 print Y.min()
 print Y.max()
 # plt.bar(np.arange(len(Y)),Y)
-plt.bar(np.arange(len(Y)),sorted(Y))
+# plt.bar(np.arange(len(Y)),sorted(Y))
 # plt.bar(np.arange(len(Y)),[abs(i) for i in sorted(Y)])
-plt.show()
+plt.hist(Y)
+# plt.show()
 
 def normaliseMatrix(a):
 	mm = np.mean(a,axis=0)
@@ -177,7 +180,7 @@ X = normaliseMatrix(X)
 
 
 
-meanAndStdDev(X,Y)
+# meanAndStdDev(X,Y)
 
 def train_model(X,Y):
 	split = int(0.7*messagesLimit)
@@ -210,14 +213,24 @@ def train_model(X,Y):
 				optimizer=sgd,
 				metrics=['mae'])
 
+	filepath="data/weights/emotion-detection-weights-improvement-{epoch:02d}-{loss:.4f}.hdf5"
+	checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')
+	callbacks_list = [checkpoint]
+
 	# check if it splits the train data as well
 	model.fit(x_train, y_train,
 			epochs=50,
-			batch_size=512)
+			batch_size=512,
+			callbacks=callbacks_list)
 	score = model.evaluate(x_test, y_test, batch_size=32)
 	print score
 	# print y_test
-train_model(X,Y)
+
+if __name__ == "__main__":
+	pass
+	# train_model(X,Y)
+	import model
+	model.train_model(X,Y)
 
 
 # figure out if this model is useful
