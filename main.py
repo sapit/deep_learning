@@ -10,129 +10,31 @@ import numpy as np
 import csv
 import copy
 import read_dataset as rd
+import model
 
-def readFbDataset():
-	csvf = csv.reader(open('dataset-fb-valence-arousal-anon.csv'))
-	messages = []
-	def separateMessageFromScore(row):
-		# print row
-		# global messages
-		messages.append(row[0])
-		return row[1:]
-	
-	columns = np.array(next(csvf)[1:])
-	scores = np.array([separateMessageFromScore(i) for i in csvf]).astype('int')
-	messages = np.array(messages)
+def process_tweet(s):
+    new_s=[]
+    for w in s.split():
+        if(w.startswith('@')):
+            continue
+        if(w.startswith('#')):
+            w.replace('#','')
+        new_s.append(w)
+    return " ".join(new_s)    
 
-	return messages,columns,scores
-
-# this doesn't parse the \t well
-def readEmoBank():
-	# csvf = csv.reader(open('emobank/raw.tsv'), delimiter='\t')
-	csvf = []
-	with open('emobank/raw.tsv') as eb:
-		# csvf = csv.reader(open('emobank/raw.tsv'), delimiter='\t')
-		line = eb.readline()
-		while line:
-			csvf.append(line.strip().split('\t'))
-			line = eb.readline()
-	msgdict = {}
-	# next(csvf)
-	# msgdict = { i[0].strip():i[1].strip() for i in csvf}
-	del csvf[0]
-	msgdict = { i[0]:i[1] for i in csvf }
-	# print msgdict
-	# print len(msgdict.keys())
-	# asd
-	# csvf = csv.reader(open('emobank/reader.tsv'), delimiter='\t')
-	with open('emobank/reader.tsv') as eb:
-		csvf = []
-		line = eb.readline()
-		while line:
-			csvf.append(line.strip().split('\t'))
-			line = eb.readline()
-
-		messages = []
-		def separateMessageFromScore(row):
-			# print row
-			# global messages
-			messages.append(msgdict[row[0]])
-			return row[1:]
-		# asd
-		columns = np.array(csvf[0][1:])
-		del csvf[0]
-		scores = np.array([separateMessageFromScore(i) for i in csvf]).astype('float')
-		messages = np.array(messages)
-
-	return messages,columns,scores
-	
-# print readEmoBank()
-
-
-# csvf = csv.reader(open('dataset-fb-valence-arousal-anon.csv'))
-# messages = np.array([])
-# def separateMessageFromScore(row):
-# 	# print row
-# 	global messages
-# 	messages = np.append(messages, row[0])
-# 	return row[1:]
-
-# columns = np.array(next(csvf)[1:])
-
-# scores = np.array([separateMessageFromScore(i) for i in csvf]).astype('int')
-
-# messages,columns,scores = readFbDataset()
-# messages,columns,scores = readEmoBank()
-messages,columns,scores = rd.readEmoBank()
-
-# print x1 == messages, x2 == columns, x3 == scores
-
-words=[]
-
-oldMessages = messages
-
-messagesLimit = 2820
-for i in range(len(messages[:messagesLimit])):
-	sentence = messages[i].lower() 
-	wordsInSentence = re.findall(r'\w+', sentence) 
-
+def vectoriseSentence(s):
+	sentence = s.lower()
+	wordsInSentence = re.findall(r'\w+', sentence)
 	filtered_words = [word for word in wordsInSentence if word not in stopwords.words('english')]
-	words = words + filtered_words
-	
-	messages[i] = " ".join(filtered_words)
-
-words, counts = np.unique(words, return_counts=True)
-idx_to_word = np.array([i for i,j in dict(zip(words, counts)).iteritems() if j > 1])
-word_to_idx = {idx_to_word[i]:i for i in range(len(idx_to_word))}
-# print word_to_idx[idx_to_word[5]] == 5
-# words = np.array([i for i,j in dict(zip(words, counts)).iteritems() if j > 1])
-words = idx_to_word
-
-
-def processSentence(s):
-	
-	sentence = s.lower() 
-	wordsInSentence = re.findall(r'\w+', sentence) 
-
-	filtered_words = [word for word in wordsInSentence if word not in stopwords.words('english')]
-
 	s = filtered_words
-
+	
 	vector = np.array([0]*len(words))
 	for i in s:
 		index = np.where(words==i)[0]
 		if len(index):
 			vector[index[0]]+=1
-
+			# vector[index[0]]=1
 	return vector
-
-
-X=[]
-for i in messages[:messagesLimit]:
-	X.append(processSentence(i))
-X = np.array(X).astype('float64')
-
-Y=np.array(scores[:,1][:messagesLimit]).astype('float64')
 
 def normaliseScores(scores):
 	mm = np.mean(scores)
@@ -140,96 +42,53 @@ def normaliseScores(scores):
 	scores = (scores - mm) / mstd
 	return scores
 
-Y = normaliseScores(Y)
-print Y.min()
-print Y.max()
-# plt.bar(np.arange(len(Y)),Y)
-# plt.bar(np.arange(len(Y)),sorted(Y))
-# plt.bar(np.arange(len(Y)),[abs(i) for i in sorted(Y)])
-plt.hist(Y)
-# plt.show()
-
 def normaliseMatrix(a):
 	mm = np.mean(a,axis=0)
 	mstd = np.std(a,axis=0)
 	a = (a - mm) / mstd
-	
 	return a
 
-def meanAndStdDev(X,Y):
-	# for i in X[:5]:
-	# 	print "Mean of some X: ", np.mean(i) 
-	# 	print "Std Dev of some X: ", np.std(i)	
-	for i in range(5):
-		print "Mean of some X: ", np.mean(X[:,i]) 
-		print "Sum of some X: ", np.sum(X[:,i]) 
-		print "Std Dev of some X: ", np.std(X[:,i])	
+def processMessage(m, words):
+	sentence = m.lower() 
+	wordsInSentence = re.findall(r'\w+', sentence) 
+	filtered_words = [word for word in wordsInSentence if word not in stopwords.words('english')]
+	words.extend(filtered_words)
+	return " ".join(filtered_words)
 
-	print "Mean of Y: ", np.mean(Y) 
-	print "Sum of Y: ", np.sum(Y) 
-	print "Std Dev of Y: ", np.std(Y)
+messages,columns,scores = rd.readEmoBank()
 
-# X = X.astype('float64')
+words=[]
+messagesLimit = 2820
+
+for i in range(len(messages[:messagesLimit])):
+	sentence = messages[i].lower() 
+	wordsInSentence = re.findall(r'\w+', sentence) 
+	filtered_words = [word for word in wordsInSentence if word not in stopwords.words('english')]
+	words = words + filtered_words
+	messages[i] = " ".join(filtered_words)
+# messages = map(lambda x: processMessage(x,words), messages[:messagesLimit])
+# print messages
+
+words, counts = np.unique(words, return_counts=True)
+idx_to_word = np.array([i for i,j in dict(zip(words, counts)).iteritems() if j > 1])
+word_to_idx = {idx_to_word[i]:i for i in range(len(idx_to_word))}
+words = idx_to_word
 
 
-ss = np.array([sum(X[:,i]) for i in range(X.shape[1])])
 
-# unique, counts = np.unique(ss, return_counts=True)
-# print dict(zip(unique, counts))
+X = [vectoriseSentence(i) for i in messages[:messagesLimit] ]
+X = np.array(X).astype('float64')
+
+Y = np.array(scores[:,1][:messagesLimit]).astype('float64')
+# plt.hist(Y)
+# plt.show()
+
 X = normaliseMatrix(X)
+Y = normaliseScores(Y)
 
 
-
-# meanAndStdDev(X,Y)
-
-def train_model(X,Y):
-	split = int(0.7*messagesLimit)
-	x_train = X[:split]
-	y_train = Y[:split]
-	x_test = X[split:]
-	y_test = Y[split:]
-
-	model = Sequential()
-	# Dense(64) is a fully-connected layer with 64 hidden units.
-	# in the first layer, you must specify the expected input data shape:
-	# here, 20-dimensional vectors.
-	input_layer_size = len(words)
-	print "INPUT LAYER SIZE: %s"%input_layer_size
-	model.add(Dense(256, activation='relu', input_dim=input_layer_size))
-	model.add(Dropout(0.5))
-	# model.add(Dense(128, activation='relu'))
-	# model.add(Dropout(0.2))
-	# model.add(Dense(500, activation='relu'))
-	# model.add(Dropout(0.5))
-	# model.add(Dense(100, activation='relu'))
-	# model.add(Dropout(0.5))
-
-	model.add(Dense(1, activation='linear'))
-	# model.add(Dense(10, activation='softmax'))
-
-	sgd = SGD(lr=0.0004, decay=1e-6, momentum=0.9, nesterov=True)
-	model.compile(loss='mean_squared_error',
-	# model.compile(loss='categorical_crossentropy',
-				optimizer=sgd,
-				metrics=['mae'])
-
-	filepath="data/weights/emotion-detection-weights-improvement-{epoch:02d}-{loss:.4f}.hdf5"
-	checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')
-	callbacks_list = [checkpoint]
-
-	# check if it splits the train data as well
-	model.fit(x_train, y_train,
-			epochs=50,
-			batch_size=512,
-			callbacks=callbacks_list)
-	score = model.evaluate(x_test, y_test, batch_size=32)
-	print score
-	# print y_test
 
 if __name__ == "__main__":
-	pass
-	# train_model(X,Y)
-	import model
 	model.train_model(X,Y)
 
 
