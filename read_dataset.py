@@ -1,7 +1,15 @@
 import numpy as np
 import csv
 import copy
+import pandas as pd
 
+def readSemEval2018(e="joy"):
+	emotions = ["joy", "anger", "fear", "sadness"]
+	if e not in emotions:
+		return None
+	# EI-reg-En-joy-train.txt
+	df = pd.read_csv('SemEval2018/EI-reg-En-%s-train.txt'%(e), sep='\t')
+	return df["Tweet"]
 
 def readFbDataset():
 	csvf = csv.reader(open('dataset-fb-valence-arousal-anon.csv'))
