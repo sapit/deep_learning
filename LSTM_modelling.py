@@ -60,7 +60,8 @@ filepath="data/weights/word-weights-improvement-{epoch:02d}-{loss:.4f}.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')
 callbacks_list = [checkpoint]
 
-model.fit(X_train, Y_train, nb_epoch=400, batch_size=64, callbacks=callbacks_list)
+if __name__=="__main__":
+    model.fit(X_train, Y_train, nb_epoch=400, batch_size=64, callbacks=callbacks_list)
 
 # load the network weights
 # filename = "data/weights/weights-improvement-18-2.8349.hdf5"
@@ -76,20 +77,22 @@ def trainMore(model):
 # model.load_weights(filename)
 # model.compile(loss='categorical_crossentropy', optimizer='adam')
 
-start = np.random.randint(0, len(X_train)-1)
-pattern = dataX[start]
-result = []
-print("Seed:")
-print("\"", ' '.join([int_to_word[value] for value in pattern]), "\"")
-for i in range(200):
-    x = np.reshape(pattern, (1, len(pattern), 1))
-    x = x/float(n_vocab)
-    prediction = model.predict(x)
-    index = np.argmax(prediction)
-    result.append(int_to_word[index])
-    pattern.append(index)
-    pattern = pattern[1:len(pattern)]
-print("\nGenerated Sequence:")
-print(' '.join(result))
-print("\nDone.")
+def generate_output(model):
+    start = np.random.randint(0, len(X_train)-1)
+    pattern = dataX[start]
+    result = []
+    print("Seed:")
+    print("\"", ' '.join([int_to_word[value] for value in pattern]), "\"")
+    for i in range(200):
+        x = np.reshape(pattern, (1, len(pattern), 1))
+        x = x/float(n_vocab)
+        prediction = model.predict(x)
+        index = np.argmax(prediction)
+        result.append(int_to_word[index])
+        pattern.append(index)
+        pattern = pattern[1:len(pattern)]
+    print("\nGenerated Sequence:")
+    print(' '.join(result))
+    print("\nDone.")
 
+generate_output(model)

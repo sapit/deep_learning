@@ -65,3 +65,10 @@ def readEmoBank():
 		messages = np.array(messages)
 
 	return messages,columns,scores
+
+def readSmileDataset():
+	df = pd.read_csv('smile/smile-annotations-final.csv')
+	return df["tweet"], df.columns, df["emotion"]
+
+def readSmileDatasetDf():
+	return pd.read_csv('smile/smile-annotations-final.csv')
