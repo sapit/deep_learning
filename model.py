@@ -52,15 +52,23 @@ def create_categorical_model(input_layer_size):
     model = Sequential()
     print("INPUT LAYER SIZE: %s"%input_layer_size)
 
-    model.add(Dense(2048, activation='relu', input_dim=input_layer_size))
+    # model.add(Dense(2048, activation='relu', input_dim=input_layer_size))
+    # model.add(Dropout(0.5))
+    # model.add(Dense(64, activation='relu'))
+    # model.add(Dropout(0.5))
+    # model.add(Dense(8, activation='relu'))
+    # model.add(Dropout(0.2))
+    # model.add(Dense(4, activation='softmax'))
+
+    model.add(Dense(2*input_layer_size, activation='relu', input_dim=input_layer_size))
     model.add(Dropout(0.5))
-    model.add(Dense(64, activation='relu'))
+    model.add(Dense(1024, activation='relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(8, activation='relu'))
+    model.add(Dense(16, activation='relu'))
     model.add(Dropout(0.2))
     model.add(Dense(4, activation='softmax'))
 
-    sgd = SGD(lr=0.004, decay=1e-6, momentum=0.9, nesterov=True)
+    sgd = SGD(lr=0.003, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(loss='categorical_crossentropy',
                 optimizer=sgd,
                 metrics=['accuracy'])
@@ -83,14 +91,14 @@ def train_categorical_model(x_train,y_train,x_test=None,y_test=None, model=None)
     if(not model):
         model = create_categorical_model(len(x_train[0]))
     
-    filepath="data/weights/emotion-detection-weights-improvement-{epoch:02d}-{loss:.4f}.hdf5"
+    filepath="data/weights-categorical/emotion-detection-weights-improvement-{epoch:02d}-{loss:.4f}.hdf5"
     checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')
     callbacks_list = [checkpoint]
 
     # check if it splits the train data as well
     model.fit(x_train, y_train,
             epochs=45,
-            batch_size=32,
+            batch_size=64,
             # validation_split=0.85,
             validation_split=0.25,
             callbacks=callbacks_list)
