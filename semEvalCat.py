@@ -12,6 +12,7 @@ import copy
 import read_dataset as rd
 import model
 from main import vectoriseSentence, normaliseScores, normaliseMatrix, processMessage, process_tweet, vectorToWords
+import json
 
 def convertToOneHot(vector, num_classes=None):
     assert isinstance(vector, np.ndarray)
@@ -92,12 +93,14 @@ messages = []
 for e in emotions:
     messages.extend(rd.readSemEval2018(e))
 
-messages = map(lambda x: processMessage(x,words), map(process_tweet,messages))
-
+messages = list(map(lambda x: processMessage(x,words), list(map(process_tweet,messages))))
 words, counts = np.unique(words, return_counts=True)
 idx_to_word = np.array([i for i,j in dict(zip(words, counts)).items() if j > 1])
 word_to_idx = {idx_to_word[i]:i for i in range(len(idx_to_word))}
 words = idx_to_word
+
+with open("words_list.json", "w") as outfile:
+    json.dump(list(words), outfile)
 
 # X = [vectoriseSentence(i) for i in messages ]
 X = list(map(vectoriseSentence, messages))
@@ -111,6 +114,7 @@ np.random.shuffle(temp)
 X,Y = zip(*temp)
 X = np.array(X)
 Y = np.array(Y)
+
 # plt.hist(Y)
 # plt.show()
 

@@ -8,7 +8,7 @@ def readSemEval2018(e="joy"):
 	if e not in emotions:
 		return None
 	# EI-reg-En-joy-train.txt
-	df = pd.read_csv('SemEval2018/EI-reg-En-%s-train.txt'%(e), sep='\t')
+	df = pd.read_csv('./SemEval2018/EI-reg-En-%s-train.txt'%(e), sep='\t')
 	return df["Tweet"]
 
 def readFbDataset():
@@ -28,10 +28,10 @@ def readFbDataset():
 
 # this doesn't parse the \t well
 def readEmoBank():
-	# csvf = csv.reader(open('emobank/raw.tsv'), delimiter='\t')
+	# csvf = csv.reader(open('/scratch/2144328i/raw.tsv'), delimiter='\t')
 	csvf = []
-	with open('emobank/raw.tsv') as eb:
-		# csvf = csv.reader(open('emobank/raw.tsv'), delimiter='\t')
+	with open('/scratch/2144328i/raw.tsv') as eb:
+		# csvf = csv.reader(open('/scratch/2144328i/raw.tsv'), delimiter='\t')
 		line = eb.readline()
 		while line:
 			csvf.append(line.strip().split('\t'))
@@ -44,8 +44,8 @@ def readEmoBank():
 	# print msgdict
 	# print len(msgdict.keys())
 	# asd
-	# csvf = csv.reader(open('emobank/reader.tsv'), delimiter='\t')
-	with open('emobank/reader.tsv') as eb:
+	# csvf = csv.reader(open('/scratch/2144328i/reader.tsv'), delimiter='\t')
+	with open('/scratch/2144328i/reader.tsv') as eb:
 		csvf = []
 		line = eb.readline()
 		while line:

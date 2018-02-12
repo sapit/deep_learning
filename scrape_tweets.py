@@ -28,6 +28,9 @@ api = tweepy.API(auth)
 #     print tweet.text
 model_weights = "data/weights-categorical/emotion-detection-weights-improvement-41-0.4464.hdf5"
 mymodel = load_model(model_weights)
+words_file = "words_list.json"
+with open(words_file, 'r') as read_file:
+    words = json.load(read_file)
 # MAX_TWEETS = 5000000000000000000000
 MAX_TWEETS = 10
 # MAX_TWEETS = 100000
@@ -61,7 +64,7 @@ while True:
         filtered_tweets_array = []
         new_tweets = None
 
-        predictions = predictions_from_raw(tweets_array, mymodel)
+        predictions = predictions_from_raw(tweets_array, mymodel, words)
 
         for i in range(tweets_array.shape[0]):
             # if(max(predictions[i])>=0.7):
