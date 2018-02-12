@@ -46,8 +46,8 @@ def processMessage(m, r_words=[]):
 	sentence = m.lower() 
 	wordsInSentence = re.findall(r'\w+', sentence) 
 	filtered_words = [word for word in wordsInSentence if word not in stopwords.words('english')]
-	# r_words.extend(filtered_words)
-	r_words = np.concatenate((r_words, filtered_words))
+	r_words.extend(filtered_words)
+	# r_words = np.concatenate((r_words, filtered_words))
 	return " ".join(filtered_words)
 
 def predictions_from_raw(ts, model, words):

@@ -2,6 +2,8 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from utils import *
+import read_dataset as rd
+from keras.models import load_model
 
 def custom_categorical_evaluation(model,X,Y):
     newy = list(map(lambda x: np.where(x==max(x))[0][0], Y))
@@ -67,6 +69,9 @@ def plot_error_folder(folder, model,X,Y):
     array_to_plot2 = []
     array_to_plot3 = []
     epoch=0
+
+    model= load_model(folder + files[0])
+    
     for f in files:
         epoch+=1
         print(f)
@@ -94,17 +99,17 @@ def plot_error_folder(folder, model,X,Y):
         plot_z = selected/len(X)
         array_to_plot3.append((plot_x, plot_y, plot_z))
 
-    x,y = zip(*array_to_plot)
-    print(x)
-    print(y)
-    plt.plot(x,y, 'rx')
+    # x,y = zip(*array_to_plot)
+    # print(x)
+    # print(y)
+    # plt.plot(x,y, 'rx')
 
-    x,y = zip(*array_to_plot2)
-    print(x)
-    print(y)
-    plt.plot(x,y, 'bx')
+    # x,y = zip(*array_to_plot2)
+    # print(x)
+    # print(y)
+    # plt.plot(x,y, 'bx')
 
-    plt.show()
+    # plt.show()
 
     x,y,z = map(np.array, zip(*array_to_plot3))
 
@@ -112,3 +117,24 @@ def plot_error_folder(folder, model,X,Y):
     plt.show()
 
     return(array_to_plot, array_to_plot2, array_to_plot3)
+
+def plot_error_folder_with_smile(folder, model,words):
+    X,Y = eval_with_smile(words)
+    return plot_error_folder(folder, model, X,Y)
+
+def eval_with_smile(words):
+    onehot = {
+        "happy": [1,0,0,0],
+        "sad": [0,1,0,0],
+        "angry":[0,0,1,0]
+    }
+    df = rd.readSmileDatasetDf()
+    X=[]
+    Y=[]
+    for i,row in df.iterrows():
+        pass
+        if(row["emotion"] in onehot.keys()):
+            vector = vectoriseSentence(processMessage(process_tweet(row["tweet"]),[]),words)
+            X.append(vector)
+            Y.append(onehot[row["emotion"]])
+    return np.array(X),np.array(Y)

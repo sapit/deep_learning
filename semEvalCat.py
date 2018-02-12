@@ -11,7 +11,8 @@ import csv
 import copy
 import read_dataset as rd
 import model
-from main import vectoriseSentence, normaliseScores, normaliseMatrix, processMessage, process_tweet, vectorToWords
+# from main import vectoriseSentence, normaliseScores, normaliseMatrix, processMessage, process_tweet, vectorToWords
+from utils import vectoriseSentence, normaliseScores, normaliseMatrix, processMessage, process_tweet, vectorToWords
 import json
 
 def convertToOneHot(vector, num_classes=None):
@@ -48,22 +49,6 @@ def plot_precisions(model, x_test, y_test):
 
 # mymodel = model.create_categorical_model(X.shape[1])
 # mymodel.load_weights("data/weights/emotion-detection-weights-improvement-14-0.2643.hdf5")
-def eval_with_smile():
-    onehot = {
-        "happy": [1,0,0,0],
-        "sad": [0,1,0,0],
-        "angry":[0,0,1,0]
-    }
-    df = rd.readSmileDatasetDf()
-    X=[]
-    Y=[]
-    for i,row in df.iterrows():
-        pass
-        if(row["emotion"] in onehot.keys()):
-            vector = vectoriseSentence(processMessage(process_tweet(row["tweet"]),[]))
-            X.append(vector)
-            Y.append(onehot[row["emotion"]])
-    return X,Y
 
 
 	# x_happy = df.loc[df["emotion"]=="happy"]["tweet"].tolist()
@@ -99,11 +84,7 @@ idx_to_word = np.array([i for i,j in dict(zip(words, counts)).items() if j > 1])
 word_to_idx = {idx_to_word[i]:i for i in range(len(idx_to_word))}
 words = idx_to_word
 
-with open("words_list.json", "w") as outfile:
-    json.dump(list(words), outfile)
-
-# X = [vectoriseSentence(i) for i in messages ]
-X = list(map(vectoriseSentence, messages))
+X = list(map(lambda x: vectoriseSentence(x, words), messages))
 X = np.array(X).astype('float64')
 
 # Y = np.array(scores[:,1]).astype('float64')

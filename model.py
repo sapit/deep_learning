@@ -4,7 +4,7 @@ from keras.layers import Dense, Dropout, Activation
 from keras.optimizers import SGD
 from keras.callbacks import ModelCheckpoint
 import numpy as np
-
+import os
 def create_model(input_layer_size):
     # input_layer_size = len(words)
     model = Sequential()
@@ -52,20 +52,18 @@ def create_categorical_model(input_layer_size):
     model = Sequential()
     print("INPUT LAYER SIZE: %s"%input_layer_size)
 
-    # model.add(Dense(2048, activation='relu', input_dim=input_layer_size))
+    # model.add(Dense(2*input_layer_size, activation='relu', input_dim=input_layer_size))
     # model.add(Dropout(0.5))
-    # model.add(Dense(64, activation='relu'))
+    # model.add(Dense(1024, activation='relu'))
     # model.add(Dropout(0.5))
-    # model.add(Dense(8, activation='relu'))
+    # model.add(Dense(16, activation='relu'))
     # model.add(Dropout(0.2))
     # model.add(Dense(4, activation='softmax'))
 
-    model.add(Dense(2*input_layer_size, activation='relu', input_dim=input_layer_size))
-    model.add(Dropout(0.5))
-    model.add(Dense(1024, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(16, activation='relu'))
-    model.add(Dropout(0.2))
+    model.add(Dense(512, activation='relu', input_dim=input_layer_size))
+    model.add(Dropout(0.2))    
+    # model.add(Dense(64, activation='relu'))
+    # model.add(Dropout(0.2))
     model.add(Dense(4, activation='softmax'))
 
     sgd = SGD(lr=0.003, decay=1e-6, momentum=0.9, nesterov=True)
@@ -90,8 +88,24 @@ def train_categorical_model(x_train,y_train,x_test=None,y_test=None, model=None)
     
     if(not model):
         model = create_categorical_model(len(x_train[0]))
+    folder = "data/"
+    subfolder_name = "weights-categorical-"
+
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    subfolders = list(filter(lambda x: subfolder_name in x , sorted(os.listdir(folder))))
+    try:
+        new_subfolder = subfolder_name + str(int(subfolders[-1].split(subfolder_name)[1]) + 1)
+    except ValueError:
+        new_subfolder = subfolder_name + '1'
+    except IndexError:
+        new_subfolder = subfolder_name + '1'
     
-    filepath="data/weights-categorical/emotion-detection-weights-improvement-{epoch:02d}-{loss:.4f}.hdf5"
+    if not os.path.exists(folder + new_subfolder):
+        os.makedirs(folder + new_subfolder)
+    
+    filepath=folder + new_subfolder + "/emotion-detection-weights-improvement-{epoch:02d}-{loss:.4f}.hdf5"
     checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')
     callbacks_list = [checkpoint]
 
