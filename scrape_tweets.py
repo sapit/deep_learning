@@ -4,7 +4,11 @@ import time
 import pickle
 import json
 import datetime
+from keras.models import load_model
+import numpy as np
+from utils import *
 pprint = pp.PrettyPrinter(indent=4).pprint
+emotions = ["joy", "anger", "fear", "sadness"]
 
 mashape_key = "QhjGzCLDY4mshX8m9kIubTv6KLb4p1TtzLJjsntXV9HI5WYc3q"
 twitter_app_auth = {
@@ -22,27 +26,55 @@ api = tweepy.API(auth)
 # public_tweets = api.home_timeline()
 # for tweet in public_tweets:
 #     print tweet.text
-
+model_weights = "data/weights-categorical/emotion-detection-weights-improvement-41-0.4464.hdf5"
+mymodel = load_model(model_weights)
 # MAX_TWEETS = 5000000000000000000000
 MAX_TWEETS = 10
 # MAX_TWEETS = 100000
+
 tweets=set()
+new_tweets = set()
 since = '2000-02-16'
 until = ''
 while True:
+    new_tweets = set()
     try:
         # tweets=set()
-        for tweet in tweepy.Cursor(api.search, q='#flatearth',since='', until='', rpp=100).items():
-            tweets.add(tweet.text)
+        for tweet in tweepy.Cursor(api.search, q='#flatearth',since='', until=until, rpp=100).items():
+            if(tweet.text not in tweets):
+                new_tweets.add(tweet.text)
+                tweets.add(tweet.text)
+            # tweets.add(tweet.text)
             # print(tweet.created_at)
-            last_created_at = tweet.created_at.strftime('%Y-%m-%d')
-            print(last_created_at)
-            # print(tweet.text)
-            # raise Exception
+            # last_created_at = tweet.created_at.strftime('%Y-%m-%d')
+            until = tweet.created_at.strftime('%Y-%m-%d')
+            # print(last_created_at)
+            print(tweet.text)
+            print(tweets)
+            print(new_tweets)
+            raise Exception
     except Exception as e:
         print (e)
-        pickle.dump(tweets, open("tweets_dataset/tweets_" + str(int(time.time()*10)) + ".pickle", "wb"))
+        if(len(new_tweets)==0):
+            continue
+        tweets_array = np.array(list(new_tweets))
+        filtered_tweets_array = []
+        new_tweets = None
+
+        predictions = predictions_from_raw(tweets_array, mymodel)
+
+        for i in range(tweets_array.shape[0]):
+            # if(max(predictions[i])>=0.7):
+            if(max(predictions[i])>=0.0):
+                emotion = emotions[predictions[i].index(max(predictions[i]))]
+                filtered_tweets_array.append([tweets_array[i],emotion])
+        # for i in range(tweets_array.shape[0]):
+        if(len(filtered_tweets_array)==0):
+            continue
+        with open("tweets_dataset/tweets_" + str(int(time.time()*10)) + ".pickle", "wb") as pickle_file:
+            pickle.dump(new_tweets, pickle_file)
+
         with open("tweets_dataset/tweets_" + str(int(time.time()*10)) + ".json", "w") as outfile:
-            json.dump(list(tweets), outfile)
-        time.sleep(60*15)
-        # time.sleep(5)
+            json.dump(list(new_tweets), outfile)
+        # time.sleep(60*15)
+        time.sleep(5)
