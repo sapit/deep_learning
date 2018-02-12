@@ -1,6 +1,9 @@
 import tweepy
 import pprint as pp
-
+import time
+import pickle
+import json
+import datetime
 pprint = pp.PrettyPrinter(indent=4).pprint
 
 mashape_key = "QhjGzCLDY4mshX8m9kIubTv6KLb4p1TtzLJjsntXV9HI5WYc3q"
@@ -23,8 +26,23 @@ api = tweepy.API(auth)
 # MAX_TWEETS = 5000000000000000000000
 MAX_TWEETS = 10
 # MAX_TWEETS = 100000
-tweets=[]
-for tweet in tweepy.Cursor(api.search, q='#trump', rpp=100).items(MAX_TWEETS):
-    # print "start\n %s \nend \n"%(tweet.text)
-    tweets.append(tweet.text)
-pprint(tweets)
+tweets=set()
+since = '2000-02-16'
+until = ''
+while True:
+    try:
+        # tweets=set()
+        for tweet in tweepy.Cursor(api.search, q='#flatearth',since='', until='', rpp=100).items():
+            tweets.add(tweet.text)
+            # print(tweet.created_at)
+            last_created_at = tweet.created_at.strftime('%Y-%m-%d')
+            print(last_created_at)
+            # print(tweet.text)
+            # raise Exception
+    except Exception as e:
+        print (e)
+        pickle.dump(tweets, open("tweets_dataset/tweets_" + str(int(time.time()*10)) + ".pickle", "wb"))
+        with open("tweets_dataset/tweets_" + str(int(time.time()*10)) + ".json", "w") as outfile:
+            json.dump(list(tweets), outfile)
+        time.sleep(60*15)
+        # time.sleep(5)
