@@ -109,9 +109,9 @@ def train_categorical_model(x_train,y_train,x_test=None,y_test=None, model=None)
         new_subfolder = subfolder_name + '1'
     
     if not os.path.exists(folder + new_subfolder):
-        os.makedirs('/' + folder + new_subfolder)
+        os.makedirs(folder + new_subfolder)
     
-    filepath='/' + folder + new_subfolder + "/emotion-detection-weights-improvement-{epoch:02d}-{loss:.4f}.hdf5"
+    filepath=folder + new_subfolder + "/emotion-detection-weights-improvement-{epoch:02d}-{loss:.4f}.hdf5"
     checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')
     callbacks_list = [checkpoint]
 
