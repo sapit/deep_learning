@@ -60,10 +60,16 @@ def create_categorical_model(input_layer_size):
     # model.add(Dropout(0.2))
     # model.add(Dense(4, activation='softmax'))
 
-    model.add(Dense(512, activation='relu', input_dim=input_layer_size))
-    model.add(Dropout(0.2))    
+    # model.add(Dense(2*input_layer_size, activation='relu', input_dim=input_layer_size))
+    # model.add(Dropout(0.5))    
     # model.add(Dense(64, activation='relu'))
     # model.add(Dropout(0.2))
+    # model.add(Dense(4, activation='softmax'))
+    
+    model.add(Dense(2*input_layer_size, activation='relu', input_dim=input_layer_size))
+    model.add(Dropout(0.5))    
+    model.add(Dense(1024, activation='relu'))
+    model.add(Dropout(0.5))
     model.add(Dense(4, activation='softmax'))
 
     sgd = SGD(lr=0.003, decay=1e-6, momentum=0.9, nesterov=True)
@@ -94,7 +100,7 @@ def train_categorical_model(x_train,y_train,x_test=None,y_test=None, model=None)
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-    subfolders = list(filter(lambda x: subfolder_name in x , sorted(os.listdir(folder))))
+    subfolders = sorted(list(filter(lambda x: subfolder_name in x , os.listdir(folder))),  key=lambda a: int(a.split('-')[2]))
     try:
         new_subfolder = subfolder_name + str(int(subfolders[-1].split(subfolder_name)[1]) + 1)
     except ValueError:
@@ -103,14 +109,14 @@ def train_categorical_model(x_train,y_train,x_test=None,y_test=None, model=None)
         new_subfolder = subfolder_name + '1'
     
     if not os.path.exists(folder + new_subfolder):
-        os.makedirs(folder + new_subfolder)
+        os.makedirs('/' + folder + new_subfolder)
     
-    filepath=folder + new_subfolder + "/emotion-detection-weights-improvement-{epoch:02d}-{loss:.4f}.hdf5"
+    filepath='/' + folder + new_subfolder + "/emotion-detection-weights-improvement-{epoch:02d}-{loss:.4f}.hdf5"
     checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')
     callbacks_list = [checkpoint]
 
     # check if it splits the train data as well
-    model.fit(x_train, y_train,
+    history = model.fit(x_train, y_train,
             epochs=45,
             batch_size=64,
             # validation_split=0.85,
@@ -118,4 +124,4 @@ def train_categorical_model(x_train,y_train,x_test=None,y_test=None, model=None)
             callbacks=callbacks_list)
     score = model.evaluate(x_test, y_test, batch_size=32)
     print(score)
-    return model
+    return model, history
