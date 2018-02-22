@@ -26,7 +26,7 @@ api = tweepy.API(auth)
 # public_tweets = api.home_timeline()
 # for tweet in public_tweets:
 #     print tweet.text
-model_weights = "data/weights-categorical/emotion-detection-weights-improvement-41-0.4464.hdf5"
+model_weights = "data/weights-categorical-1/emotion-detection-weights-improvement-21-0.2688.hdf5"
 mymodel = load_model(model_weights)
 words_file = "words_list.json"
 with open(words_file, 'r') as read_file:
@@ -52,19 +52,24 @@ while True:
             # last_created_at = tweet.created_at.strftime('%Y-%m-%d')
             until = tweet.created_at.strftime('%Y-%m-%d')
             # print(last_created_at)
-            print(tweet.text)
-            print(tweets)
-            print(new_tweets)
-            raise Exception
+
+            # print(tweet.text)
+            # print(tweets)
+            # print(new_tweets)
+            # raise Exception
     except Exception as e:
         print (e)
+        # print(e.strerror)
+        if("status code = 429" in e.reason):
+            time.sleep(61*15)
+
         if(len(new_tweets)==0):
             continue
         tweets_array = np.array(list(new_tweets))
         filtered_tweets_array = []
         new_tweets = None
 
-        predictions = predictions_from_raw(tweets_array, mymodel, words)
+        predictions = list(map(list,predictions_from_raw(tweets_array, mymodel, words)))
 
         for i in range(tweets_array.shape[0]):
             # if(max(predictions[i])>=0.7):
@@ -75,9 +80,9 @@ while True:
         if(len(filtered_tweets_array)==0):
             continue
         with open("tweets_dataset/tweets_" + str(int(time.time()*10)) + ".pickle", "wb") as pickle_file:
-            pickle.dump(new_tweets, pickle_file)
+            pickle.dump(filtered_tweets_array, pickle_file)
 
         with open("tweets_dataset/tweets_" + str(int(time.time()*10)) + ".json", "w") as outfile:
-            json.dump(list(new_tweets), outfile)
-        # time.sleep(60*15)
-        time.sleep(5)
+            json.dump(list(filtered_tweets_array), outfile)
+        time.sleep(61*15)
+        # time.sleep(5)
