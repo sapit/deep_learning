@@ -28,7 +28,6 @@ api = tweepy.API(auth)
 
 # public_tweets = api.home_timeline()
 # for tweet in public_tweets:
-#     print tweet.full_text
 model_weights = "data/weights-categorical-2/emotion-detection-weights-improvement-100-0.1098.hdf5"
 mymodel = load_model(model_weights)
 words_file = "words_list.json"
@@ -57,13 +56,15 @@ while True:
             # last_created_at = tweet.created_at.strftime('%Y-%m-%d')
             until = tweet.created_at
             # print(last_created_at)
-            # print(tweet.full_text)
             # print(tweets)
             # print(new_tweets)
             # raise Exception
     except Exception as e:
-        print(e)
-        # print(until)
+        print (e)
+        # print(e.strerror)
+        if("status code = 429" in e.reason):
+            time.sleep(61*15)
+
         if(len(new_tweets)==0):
             time.sleep(60*15)
             # time.sleep(5)
