@@ -72,7 +72,7 @@ def create_categorical_model(input_layer_size):
     model.add(Dropout(0.5))
     model.add(Dense(4, activation='softmax'))
 
-    sgd = SGD(lr=0.003, decay=1e-6, momentum=0.9, nesterov=True)
+    sgd = SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(loss='categorical_crossentropy',
                 optimizer=sgd,
                 metrics=['accuracy'])
@@ -86,7 +86,7 @@ def train_categorical_model(x_train,y_train,x_test=None,y_test=None, model=None)
     # score = model.evaluate(x_test, y_test, batch_size=128)
 
 
-    default_split = int(0.9*len(x_train))
+    default_split = int(0.7*len(x_train))
     
     if(x_test is None and y_test is None):
         x_train,x_test = x_train[:default_split], x_train[default_split:]
@@ -117,7 +117,7 @@ def train_categorical_model(x_train,y_train,x_test=None,y_test=None, model=None)
 
     # check if it splits the train data as well
     history = model.fit(x_train, y_train,
-            epochs=45,
+            epochs=120,
             batch_size=64,
             # validation_split=0.85,
             validation_split=0.25,

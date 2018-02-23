@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from utils import *
 import read_dataset as rd
 from keras.models import load_model
+from natsort import natsorted, ns
 
 def custom_categorical_evaluation(model,X,Y):
     newy = list(map(lambda x: np.where(x==max(x))[0][0], Y))
@@ -52,7 +53,7 @@ def count_unique_mistakes_categorical(model,X,Y,hr_values):
 def try_folder(folder, model,X,Y):
     if folder[-1]!='/':
         folder += '/'
-    files = sorted(os.listdir(folder))
+    files = natsorted(os.listdir(folder))
     for f in files:
         print(f)
         model.load_weights(folder+f)
@@ -63,11 +64,12 @@ def try_folder(folder, model,X,Y):
 def plot_error_folder(folder, model,X,Y):
     if folder[-1]!='/':
         folder += '/'
-    files = sorted(os.listdir(folder))
+    files = natsorted(os.listdir(folder))
 
     array_to_plot = []
     array_to_plot2 = []
     array_to_plot3 = []
+    array_to_plot3_2 = []
     epoch=0
 
     model= load_model(folder + files[0])
@@ -77,7 +79,8 @@ def plot_error_folder(folder, model,X,Y):
         print(f)
         model.load_weights(folder+f)
         print("Filename: %s"%(f))
-        print("Evaluation: %s" % (str(custom_categorical_evaluation(model,X,Y))))
+        res2 = custom_categorical_evaluation(model,X,Y)
+        print("Evaluation: %s" % (str(res2)))
         res = custom_categorical_evaluation_best_only(model,X,Y)
         # if(res == None or float(res[1])<100):
         if(res == None):
@@ -98,7 +101,11 @@ def plot_error_folder(folder, model,X,Y):
         plot_y = 1 - error
         plot_z = selected/len(X)
         array_to_plot3.append((plot_x, plot_y, plot_z))
-
+        
+        plot_x_2 = epoch
+        plot_y_2 = 1 - res2[2]
+        array_to_plot3_2.append( (plot_x_2, plot_y_2) )
+ 
     # x,y = zip(*array_to_plot)
     # print(x)
     # print(y)
@@ -111,8 +118,11 @@ def plot_error_folder(folder, model,X,Y):
 
     # plt.show()
 
+    x,y=map(np.array, zip(*array_to_plot3_2))
+    plt.scatter(x,y,)
+    plt.show()
+    
     x,y,z = map(np.array, zip(*array_to_plot3))
-
     plt.scatter(x,y, s=((z)**2)*6000)
     plt.show()
 

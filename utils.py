@@ -51,8 +51,6 @@ def processMessage(m, r_words=[]):
 	return " ".join(filtered_words)
 
 def predictions_from_raw(ts, model, words):
-	print("TS")
-	print(ts)
 	predictions=[]
 	vectors = []
 	for t in ts:
@@ -65,3 +63,15 @@ def predictions_from_raw(ts, model, words):
 	# print(t)
 	# print(p)
 	return predictions
+
+def vector_to_emotion(v,emotions=None):
+	if emotions is None:
+		emotions = ["joy",
+			"sadness",
+			"anger",
+			"fear"]
+	v=list(v)
+	emotion = emotions[v.index(max(v))]
+	return emotion
+
+
