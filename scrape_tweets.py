@@ -32,7 +32,7 @@ model_weights = "data/weights-categorical-2/emotion-detection-weights-improvemen
 mymodel = load_model(model_weights)
 words_file = "words_list.json"
 with open(words_file, 'r') as read_file:
-    words = json.load(read_file)
+    words = np.array(json.load(read_file))
 # MAX_TWEETS = 5000000000000000000000
 MAX_TWEETS = 10
 # MAX_TWEETS = 100000
@@ -48,7 +48,7 @@ while True:
     try:
         # tweets=set()
         for tweet in tweepy.Cursor(api.search, q='#flatearth',since='', until=until.strftime('%Y-%m-%d'), rpp=100, tweet_mode='extended').items():
-            if(tweet.full_text not in tweets):
+            if(tweet.lang == "en" and tweet.full_text not in tweets):
                 new_tweets.add(tweet.full_text)
                 tweets.add(tweet.full_text)
             # tweets.add(tweet.full_text)
@@ -58,12 +58,14 @@ while True:
             # print(last_created_at)
             # print(tweets)
             # print(new_tweets)
-            # raise Exception
-    except Exception as e:
+            # raise tweepy.TweepError("random")
+    # except Exception as e:
+    except tweepy.TweepError as e:
         print (e)
         # print(e.strerror)
         if("status code = 429" in e.reason):
             time.sleep(61*15)
+            # continue
 
         if(len(new_tweets)==0):
             time.sleep(60*15)
@@ -81,18 +83,27 @@ while True:
 
         for i in range(tweets_array.shape[0]):
             # if(max(predictions[i])>=0.7):
+            print(max(predictions[i]))
             if(max(predictions[i])>=0.5):
-                print("HUI2")
-                print("tweets_array[i]")
+                # print("HUI2")
+                print(tweets_array[i])
+                # print(max(predictions[i]))
                 emotion = emotions[predictions[i].index(max(predictions[i]))]
                 filtered_tweets_array.append([tweets_array[i],emotion])
+            # if(max(predictions[i])>=0.5):
+            #     print("HUI2")
+
         # for i in range(tweets_array.shape[0]):
         if(len(filtered_tweets_array)==0):
             continue
         # with open("tweets_dataset/tweets_" + str(int(time.time()*10)) + ".pickle", "wb") as pickle_file:
-        #     pickle.dump(new_tweets, pickle_file)
+        #     pickle.dump(filtered_tweets_array, pickle_file)
 
         with open("tweets_dataset/tweets_" + str(int(time.time()*10)) + ".json", "w") as outfile:
-            json.dump(list(new_tweets), outfile)
-        time.sleep(60*15)
+            print("DUMPING")
+            json.dump(list(filtered_tweets_array), outfile)
+        # time.sleep(60*5)
         # time.sleep(5)
+    except Exception as e:
+        print(e)
+        pass
