@@ -74,4 +74,5 @@ def vector_to_emotion(v,emotions=None):
 	emotion = emotions[v.index(max(v))]
 	return emotion
 
-
+def predictions_counts(predictions):
+	return list(zip(*np.unique(list(map(vector_to_emotion, filter(lambda a: max(a)>0.5,predictions))), return_counts=True)))
