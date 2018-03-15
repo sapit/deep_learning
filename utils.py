@@ -1,7 +1,9 @@
 import numpy as np
 import regex as re
+import nltk
 from nltk.corpus import stopwords
 
+english_vocab=None
 def process_tweet(s):
 	url_pattern = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
 	# map(re.findall(pattern,s))
@@ -76,3 +78,15 @@ def vector_to_emotion(v,emotions=None):
 
 def predictions_counts(predictions):
 	return list(zip(*np.unique(list(map(vector_to_emotion, filter(lambda a: max(a)>0.5,predictions))), return_counts=True)))
+
+def eval_english(sentence):
+    global english_vocab
+    if(english_vocab is None):
+        english_vocab = set(w.lower() for w in nltk.corpus.words.words())
+
+    process = lambda s: processMessage(process_tweet(s))
+
+    check = lambda s: list(map(lambda w: w in english_vocab, process(s).split()))
+    evaluate_lang = lambda s: (lambda p=np.unique(check(s), return_counts=True)[1]: p[0]/(p[0]+p[1]) if len(p)==2 else 0)()
+
+    return evaluate_lang(sentence)
