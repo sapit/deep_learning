@@ -26,6 +26,39 @@ auth.set_access_token(twitter_app_auth["access_token"], twitter_app_auth["access
 
 api = tweepy.API(auth)
 
+def store_tweets(new_tweets):
+    pass
+    tweets_array = np.array(list(new_tweets))
+    filtered_tweets_array = []
+    new_tweets = None
+
+    predictions = list(map(list, predictions_from_raw(tweets_array, mymodel, words)))
+
+    for i in range(tweets_array.shape[0]):
+        # if(max(predictions[i])>=0.7):
+        print(max(predictions[i]))
+        if(max(predictions[i])>=0.5):
+            # print("HUI2")
+            print(tweets_array[i])
+            # print(max(predictions[i]))
+            emotion = emotions[predictions[i].index(max(predictions[i]))]
+            filtered_tweets_array.append([tweets_array[i],emotion])
+        # if(max(predictions[i])>=0.5):
+        #     print("HUI2")
+
+    # for i in range(tweets_array.shape[0]):
+    if(len(filtered_tweets_array)==0):
+        print("empty filtered_tweets_array")
+        return
+    # with open("tweets_dataset/tweets_" + str(int(time.time()*10)) + ".pickle", "wb") as pickle_file:
+    #     pickle.dump(filtered_tweets_array, pickle_file)
+
+    with open("tweets_dataset/tweets_" + str(int(time.time()*10)) + ".json", "w") as outfile:
+        print("DUMPING")
+        json.dump(list(filtered_tweets_array), outfile)
+    # time.sleep(60*5)
+    # time.sleep(5)
+
 # public_tweets = api.home_timeline()
 # for tweet in public_tweets:
 model_weights = "data/weights-categorical-2/emotion-detection-weights-improvement-100-0.1098.hdf5"
@@ -41,14 +74,18 @@ tweets=set()
 new_tweets = set()
 since = '2000-02-16'
 until = datetime.date.today()
+cursor = tweepy.Cursor(api.search, q='#flatearth', rpp=100, tweet_mode='extended').items()
 iteration=0
+new_tweets = set()
 while True:
     iteration+=1
-    new_tweets = set()
+    # new_tweets = set()
     try:
         # tweets=set()
-        for tweet in tweepy.Cursor(api.search, q='#flatearth',since='', until=until.strftime('%Y-%m-%d'), rpp=100, tweet_mode='extended').items():
+        # for tweet in tweepy.Cursor(api.search, q='#flatearth',since='', until=until.strftime('%Y-%m-%d'), rpp=100, tweet_mode='extended').items():
+            tweet=cursor.next()
             if(tweet.lang == "en" and tweet.full_text not in tweets):
+                print("Adding tweet")
                 new_tweets.add(tweet.full_text)
                 tweets.add(tweet.full_text)
             # tweets.add(tweet.full_text)
@@ -62,48 +99,52 @@ while True:
     # except Exception as e:
     except tweepy.TweepError as e:
         print (e)
+        print("HUI")
         # print(e.strerror)
-        if("status code = 429" in e.reason):
-            time.sleep(61*15)
+        # if("status code = 429" in e.reason):
+        print(len(new_tweets))
+        if(len(new_tweets) > 0):
+            store_tweets(new_tweets)
+        time.sleep(61*5)
+        new_tweets = set()
             # continue
 
-        if(len(new_tweets)==0):
-            time.sleep(60*15)
-            # time.sleep(5)
-            continue
-        if(iteration >=1):
-            # print("HUI")
-            iteration=0
-            until = until - datetime.timedelta(1)
-        tweets_array = np.array(list(new_tweets))
-        filtered_tweets_array = []
-        new_tweets = None
+        # if(iteration >=1):
+        #     # print("HUI")
+        #     iteration=0
+        #     until = until - datetime.timedelta(1)
 
-        predictions = list(map(list, predictions_from_raw(tweets_array, mymodel, words)))
 
-        for i in range(tweets_array.shape[0]):
-            # if(max(predictions[i])>=0.7):
-            print(max(predictions[i]))
-            if(max(predictions[i])>=0.5):
-                # print("HUI2")
-                print(tweets_array[i])
-                # print(max(predictions[i]))
-                emotion = emotions[predictions[i].index(max(predictions[i]))]
-                filtered_tweets_array.append([tweets_array[i],emotion])
-            # if(max(predictions[i])>=0.5):
-            #     print("HUI2")
+        # tweets_array = np.array(list(new_tweets))
+        # filtered_tweets_array = []
+        # new_tweets = None
+
+        # predictions = list(map(list, predictions_from_raw(tweets_array, mymodel, words)))
 
         # for i in range(tweets_array.shape[0]):
-        if(len(filtered_tweets_array)==0):
-            continue
-        # with open("tweets_dataset/tweets_" + str(int(time.time()*10)) + ".pickle", "wb") as pickle_file:
-        #     pickle.dump(filtered_tweets_array, pickle_file)
+        #     # if(max(predictions[i])>=0.7):
+        #     print(max(predictions[i]))
+        #     if(max(predictions[i])>=0.5):
+        #         # print("HUI2")
+        #         print(tweets_array[i])
+        #         # print(max(predictions[i]))
+        #         emotion = emotions[predictions[i].index(max(predictions[i]))]
+        #         filtered_tweets_array.append([tweets_array[i],emotion])
+        #     # if(max(predictions[i])>=0.5):
+        #     #     print("HUI2")
 
-        with open("tweets_dataset/tweets_" + str(int(time.time()*10)) + ".json", "w") as outfile:
-            print("DUMPING")
-            json.dump(list(filtered_tweets_array), outfile)
-        # time.sleep(60*5)
-        # time.sleep(5)
+        # # for i in range(tweets_array.shape[0]):
+        # if(len(filtered_tweets_array)==0):
+        #     continue
+        # # with open("tweets_dataset/tweets_" + str(int(time.time()*10)) + ".pickle", "wb") as pickle_file:
+        # #     pickle.dump(filtered_tweets_array, pickle_file)
+
+        # with open("tweets_dataset/tweets_" + str(int(time.time()*10)) + ".json", "w") as outfile:
+        #     print("DUMPING")
+        #     json.dump(list(filtered_tweets_array), outfile)
+        # # time.sleep(60*5)
+        # # time.sleep(5)
     except Exception as e:
         print(e)
         pass
+

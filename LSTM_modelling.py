@@ -8,10 +8,19 @@ from keras.callbacks import ModelCheckpoint
 from keras.layers import Dense, Dropout, LSTM
 from keras.layers.embeddings import Embedding
 from keras.optimizers import Adam
+import pandas as pd
+from utils import *
+import copy
+
+df = pd.read_csv("brexit_labelled_tweets.csv")
+emotion_filter = df['emotion'] == 'joy'
+tweets = list(map(process_tweet, df[emotion_filter]['tweet']))
+
 #from main import process_tweet
 #from read_dataset import readSemEval2018joy
 
-rawtext = open('wonderland.txt','r').read().split('\n')
+# rawtext = open('wonderland.txt','r').read().split('\n')
+rawtext = tweets
 #rawtext = readSemEval2018joy()
 rawtext = ' '.join(rawtext)
 rawtext = [word.strip(string.punctuation) for word in rawtext.split()]
@@ -41,6 +50,7 @@ for i in range(0, n_words - seq_length):
 n_patterns = len(dataX)
 print('Total patterns:', n_patterns)
 
+print("max: ",max(dataY))
 # Reshape dataX to size of [samples, time steps, features] and scale it to 0-1
 # Represent dataY as one hot encoding
 X_train = np.reshape(dataX, (n_patterns, seq_length, 1))/float(n_vocab)
