@@ -85,8 +85,7 @@ def eval_english(sentence):
         english_vocab = set(w.lower() for w in nltk.corpus.words.words())
 
     process = lambda s: processMessage(process_tweet(s))
-
     check = lambda s: list(map(lambda w: w in english_vocab, process(s).split()))
-    evaluate_lang = lambda s: (lambda p=np.unique(check(s), return_counts=True)[1]: p[0]/(p[0]+p[1]) if len(p)==2 else 0)()
+    evaluate_lang = lambda s: (lambda p=np.unique(check(s), return_counts=True)[1]: p[0]/(len(s.split())) if len(p)==2 else 0)()
 
     return evaluate_lang(sentence)
