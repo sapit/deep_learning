@@ -13,8 +13,6 @@ batches = [tweets[i:i+len(tweets)//10] for i in range(0, len(tweets), len(tweets
 
 for i in range(len(batches)):
     print("Batch " + str(i))
-    if(i in [1,2]):
-        continue
     batch = batches[i]
 
     predictions = predictions_from_raw(batch, emotion_model, words)
