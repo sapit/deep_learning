@@ -30,7 +30,7 @@ def readFbDataset():
 def readEmoBank():
 	# csvf = csv.reader(open('/scratch/2144328i/raw.tsv'), delimiter='\t')
 	csvf = []
-	with open('/scratch/2144328i/raw.tsv') as eb:
+	with open('./emobank/raw.tsv') as eb:
 		# csvf = csv.reader(open('/scratch/2144328i/raw.tsv'), delimiter='\t')
 		line = eb.readline()
 		while line:
@@ -45,7 +45,7 @@ def readEmoBank():
 	# print len(msgdict.keys())
 	# asd
 	# csvf = csv.reader(open('/scratch/2144328i/reader.tsv'), delimiter='\t')
-	with open('/scratch/2144328i/reader.tsv') as eb:
+	with open('emobank/reader.tsv') as eb:
 		csvf = []
 		line = eb.readline()
 		while line:

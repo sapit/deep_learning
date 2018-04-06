@@ -11,7 +11,6 @@ import csv
 import copy
 import read_dataset as rd
 import model
-# from main import vectoriseSentence, normaliseScores, normaliseMatrix, processMessage, process_tweet, vectorToWords
 from utils import vectoriseSentence, normaliseScores, normaliseMatrix, processMessage, process_tweet, vectorToWords
 import json
 
@@ -67,11 +66,14 @@ joy = rd.readSemEval2018("joy")
 sadness = rd.readSemEval2018("sadness")
 anger = rd.readSemEval2018("anger")
 fear = rd.readSemEval2018("fear")
+
 Y =     [emotions.index("joy")]*len(joy)\
       + [emotions.index("sadness")]*len(sadness)\
       + [emotions.index("anger")]*len(anger)\
       + [emotions.index("fear")]*len(fear)
 print("Messages: %s"%len(Y))
+
+
 words = []
 messages = []
 # joy + sadness + anger + fear
@@ -93,6 +95,7 @@ Y = convertToOneHot(np.array(Y))
 temp = list(zip(X,Y))
 np.random.shuffle(temp)
 X,Y = zip(*temp)
+
 X = np.array(X)
 Y = np.array(Y)
 

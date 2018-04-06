@@ -45,7 +45,7 @@ def normaliseMatrix(a):
 	return a
 
 def processMessage(m, r_words=[]):
-	sentence = m.lower() 
+	sentence = m.lower()
 	wordsInSentence = re.findall(r'\w+', sentence) 
 	filtered_words = [word for word in wordsInSentence if word not in stopwords.words('english')]
 	r_words.extend(filtered_words)

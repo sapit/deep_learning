@@ -10,13 +10,13 @@ def create_model(input_layer_size):
     model = Sequential()
     print("INPUT LAYER SIZE: %s"%input_layer_size)
 
-    model.add(Dense(256, activation='relu', input_dim=input_layer_size))
+    model.add(Dense((input_layer_size*2), activation='relu', input_dim=input_layer_size))
     model.add(Dropout(0.5))
     model.add(Dense(8, activation='relu'))
     # model.add(Dropout(0.5))
     model.add(Dense(1, activation='linear'))
 
-    sgd = SGD(lr=0.00001, decay=1e-6, momentum=0.9, nesterov=True)
+    sgd = SGD(lr=0.0005, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(loss='mean_squared_error',
                 optimizer=sgd,
                 metrics=['mae'])
@@ -38,14 +38,14 @@ def train_model(x_train,y_train,x_test=None,y_test=None):
     callbacks_list = [checkpoint]
 
     # check if it splits the train data as well
-    model.fit(x_train, y_train,
+    history = model.fit(x_train, y_train,
             epochs=40,
-            batch_size=32,
+            batch_size=128,
             validation_split=0.25,
             callbacks=callbacks_list)
-    score = model.evaluate(x_test, y_test, batch_size=32)
+    score = model.evaluate(x_test, y_test, batch_size=512)
     print(score)
-    return model
+    return history, model
 
 def create_categorical_model(input_layer_size):
     # input_layer_size = len(words)
@@ -67,7 +67,7 @@ def create_categorical_model(input_layer_size):
     # model.add(Dense(4, activation='softmax'))
     
     model.add(Dense(2*input_layer_size, activation='relu', input_dim=input_layer_size))
-    model.add(Dropout(0.5))    
+    model.add(Dropout(0.5))
     model.add(Dense(1024, activation='relu'))
     model.add(Dropout(0.5))
     model.add(Dense(4, activation='softmax'))
